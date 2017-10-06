@@ -115,8 +115,9 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+//Deleted: no need for Gcode cache
         //Init gcode cache
-        new GcodeCache();
+//        new GcodeCache();
 
         //Set tab host for the view
         setTabHost();
@@ -403,20 +404,20 @@ public class MainActivity extends ActionBarActivity {
             showExtraFragment(2, 0);
 
         } else {
-
-             if (c.getCount() == 1) {
-
-                c.moveToFirst();
-
-                Log.i("Extra", "Opening " + c.getInt(0));
-
-                showExtraFragment(1, c.getInt(0));
-
-                 mDrawerToggle.setDrawerIndicatorEnabled(true);
-                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-
-
-                } else {
+//Deleted because we don't need printview
+//             if (c.getCount() == 1) {
+//
+//                c.moveToFirst();
+//
+//                Log.i("Extra", "Opening " + c.getInt(0));
+//
+//                showExtraFragment(1, c.getInt(0));
+//
+//                 mDrawerToggle.setDrawerIndicatorEnabled(true);
+//                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+//
+//
+//                } else {
 
                  mCurrent.setMenuVisibility(true);
                  mManager.popBackStack();
@@ -425,7 +426,7 @@ public class MainActivity extends ActionBarActivity {
 
 
              }
-        }
+//    }
 
         DatabaseController.closeDb();
 
@@ -460,21 +461,21 @@ public class MainActivity extends ActionBarActivity {
                 mDrawerToggle.setDrawerIndicatorEnabled(false);
 
                 break;
-
-            case 1:
-
-                mCurrent.setMenuVisibility(false);
-                //New detailview with the printer name as extra
-                PrintViewFragment detailp = new PrintViewFragment();
-                Bundle argsp = new Bundle();
-                argsp.putLong("id", id);
-                detailp.setArguments(argsp);
-                mTransaction.replace(R.id.maintab3, detailp, ListContent.ID_PRINTVIEW).commit();
-
-                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-                mDrawerToggle.setDrawerIndicatorEnabled(false);
-
-                break;
+//Deleted since we don't need printview
+//            case 1:
+//
+//                mCurrent.setMenuVisibility(false);
+//                //New detailview with the printer name as extra
+//                PrintViewFragment detailp = new PrintViewFragment();
+//                Bundle argsp = new Bundle();
+//                argsp.putLong("id", id);
+//                detailp.setArguments(argsp);
+//                mTransaction.replace(R.id.maintab3, detailp, ListContent.ID_PRINTVIEW).commit();
+//
+//                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+//                mDrawerToggle.setDrawerIndicatorEnabled(false);
+//
+//                break;
 
             case 2:
 

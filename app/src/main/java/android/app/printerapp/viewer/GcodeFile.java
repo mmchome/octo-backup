@@ -19,6 +19,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
+/**
+ * Note by Wanzi: When a Gcode file is opened, it also asks whether you want to open the print view
+ */
 public class GcodeFile  {
 	private static final String TAG = "gcode";
 	public static final int COORDS_PER_VERTEX = 3;
@@ -272,10 +275,11 @@ public class GcodeFile  {
     		if(mMode== ViewerMainFragment.DONT_SNAPSHOT) {
     			ViewerMainFragment.initSeekBar(mMaxLayer);
 	    		ViewerMainFragment.draw();
-				mProgressDialog.dismiss();  
-    		} else if(mMode== ViewerMainFragment.PRINT_PREVIEW) {
-    			PrintViewFragment.drawPrintView();
-    			mProgressDialog.dismiss();
+				mProgressDialog.dismiss();
+//	Deleted since we don't need printview
+//    		} else if(mMode== ViewerMainFragment.PRINT_PREVIEW) {
+//    			PrintViewFragment.drawPrintView();
+//    			mProgressDialog.dismiss();
     		} else if (mMode== ViewerMainFragment.DO_SNAPSHOT) {
 				LibraryModelCreation.takeSnapshot();
     		}

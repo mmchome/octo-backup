@@ -223,24 +223,24 @@ import android.widget.Toast;
                             toast.setView(toastView);
                             toast.show();
                         }
-
-                        //Check if the Job has finished, and create a dialog to remove the file / send a new one
-                        if ((m.getStatus() > 0) && (m.getStatus()<=7)) {
-
-                            //if job finished, create dialog
-                            if (m.getJob().getFinished()) {
-                                new FinishDialog(getActivity(),m);
-
-                                //if not finished, normal behavior
-                            } else {
-                                MainActivity.showExtraFragment(1, m.getId());
-                            }
-                        } else {
-
-                            OctoprintConnection.getNewConnection(getActivity(), m);
-
-
-                        }
+// Removed: no need for Finish Dialog
+//                        //Check if the Job has finished, and create a dialog to remove the file / send a new one
+//                        if ((m.getStatus() > 0) && (m.getStatus()<=7)) {
+//
+//                            //if job finished, create dialog
+//                            if (m.getJob().getFinished()) {
+//                                new FinishDialog(getActivity(),m);
+//
+//                                //if not finished, normal behavior
+//                            } else {
+//                                MainActivity.showExtraFragment(1, m.getId());
+//                            }
+//                        } else {
+//
+//                            OctoprintConnection.getNewConnection(getActivity(), m);
+//
+//
+//                        }
                     }
                 }
             }

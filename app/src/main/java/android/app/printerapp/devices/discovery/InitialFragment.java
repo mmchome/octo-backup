@@ -16,6 +16,16 @@ import com.material.widget.PaperButton;
  *
  * Created by alberto-baeza on 2/4/15.
  */
+/**
+ * To Be Modified.
+ * This fragment contains the initial screen on the third tab in the MainActivity. It contains the
+ * picture as well as the button for network scan.
+ * Disactivate this screen will disactivate the functionality for scanning
+ * networks for adding printers.
+ * Modify this will change the layout as well as the functionalities of the third tab.
+ *
+ * Noted by Wanzi for
+ */
 public class InitialFragment extends Fragment{
 
     private PaperButton mScanButton;
@@ -57,7 +67,7 @@ public class InitialFragment extends Fragment{
             mScanButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view){
-
+//To Be Deleted
                     new DiscoveryController(getActivity()).scanDelayDialog();
 
                 }

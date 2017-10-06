@@ -19,18 +19,16 @@
             android:numColumns="5"></GridView>
 
         <ImageView
+            android:id="@+id/hide_icon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/hide_icon"
-            android:src="@android:drawable/ic_menu_view"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
             android:layout_margin="30dp"
             android:scaleType="centerInside"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:src="@android:drawable/ic_menu_view" />
     </RelativeLayout>
-
-
 
 
 </LinearLayout>

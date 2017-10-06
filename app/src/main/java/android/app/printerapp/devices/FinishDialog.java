@@ -23,6 +23,12 @@ import java.io.File;
 /**
  * Created by alberto-baeza on 2/12/15.
  */
+
+
+/**
+ * To Be Deleted.
+ * We don't need to print thus no need this dialog
+ */
 public class FinishDialog {
 
     private static final String STRING_TEMP = "/_tmp";
