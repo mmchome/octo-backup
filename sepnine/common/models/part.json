@@ -1,0 +1,28 @@
+{
+  "name": "Part",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "PartId": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "StlFileName": {
+      "type": "string"
+    },
+    "CadFileName": {
+      "type": "string"
+    },
+    "ProjectId": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

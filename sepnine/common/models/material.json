@@ -1,0 +1,25 @@
+{
+  "name": "Material",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "MaterialNo": {
+      "type": "string",
+      "required": true
+    },
+    "BatchId": {
+      "type": "number",
+      "required": true
+    },
+    "MaterialName": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

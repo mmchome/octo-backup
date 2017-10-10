@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "User": {
+    "dataSource": "db"
+  },
+  "AccessToken": {
+    "dataSource": "db",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "db",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "db",
+    "public": false,
+    "options": {
+      "strictObjectIDCoercion": true
+    }
+  },
+  "Role": {
+    "dataSource": "db",
+    "public": false
+  },
+  "Part": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "Project": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "Build": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "PrintConfiguration": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "PostPrint": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "Batch": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "Material": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "PartOfBuild": {
+    "dataSource": "piketondb",
+    "public": true
+  },
+  "HallFlowTest": {
+    "dataSource": "piketondb",
+    "public": true
+  }
+}

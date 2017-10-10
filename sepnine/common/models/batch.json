@@ -1,0 +1,30 @@
+{
+  "name": "Batch",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "BatchId": {
+      "type": "number",
+      "required": true
+    },
+    "Supplier": {
+      "type": "string"
+    },
+    "LotNumber": {
+      "type": "number"
+    },
+    "Grade": {
+      "type": "string"
+    },
+    "PdfLink": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,44 @@
+{
+  "name": "PrintConfiguration",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "PrintConfigId": {
+      "type": "number",
+      "required": true
+    },
+    "BuildId": {
+      "type": "string",
+      "required": true
+    },
+    "MaterialNo": {
+      "type": "string",
+      "required": true
+    },
+    "MagicsSnapshot": {
+      "type": "string"
+    },
+    "MaterialReuseCount": {
+      "type": "number"
+    },
+    "PowderWeight": {
+      "type": "number"
+    },
+    "Operator": {
+      "type": "string"
+    },
+    "StartTime": {
+      "type": "date"
+    },
+    "EndTime": {
+      "type": "date"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
