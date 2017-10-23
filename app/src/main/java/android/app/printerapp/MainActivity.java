@@ -3,17 +3,7 @@ package android.app.printerapp;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.printerapp.devices.DevicesFragment;
-import android.app.printerapp.devices.database.DatabaseController;
-import android.app.printerapp.devices.discovery.InitialFragment;
-import android.app.printerapp.devices.printview.GcodeCache;
-import android.app.printerapp.devices.printview.PrintViewFragment;
-import android.app.printerapp.history.HistoryDrawerAdapter;
-import android.app.printerapp.history.SwipeDismissListViewTouchListener;
-import android.app.printerapp.library.LibraryController;
-import android.app.printerapp.library.LibraryFragment;
-import android.app.printerapp.library.detail.DetailViewFragment;
-import android.app.printerapp.settings.SettingsFragment;
+import android.app.printerapp.util.GcodeCache;
 import android.app.printerapp.util.ui.AnimationHelper;
 import android.app.printerapp.viewer.ViewerMainFragment;
 import android.content.BroadcastReceiver;
@@ -21,9 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -35,11 +23,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Created by alberto-baeza on 1/21/15.
@@ -47,8 +33,6 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity {
 
     //List of Fragments
-    private DevicesFragment mDevicesFragment; //Devices fragment @static for refresh
-    private LibraryFragment mLibraryFragment; //Storage fragment
     private ViewerMainFragment mViewerFragment; //Print panel fragment @static for model load
 
     //Class specific variables
@@ -61,7 +45,6 @@ public class MainActivity extends ActionBarActivity {
     //Drawer
     private static DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private HistoryDrawerAdapter mDrawerAdapter;
     private static ActionBarDrawerToggle mDrawerToggle;
 
     @Override
@@ -90,8 +73,6 @@ public class MainActivity extends ActionBarActivity {
         mDialog = new DialogController(this);
 
         //Initialize fragments
-        mDevicesFragment = (DevicesFragment) getFragmentManager().findFragmentByTag(ListContent.ID_DEVICES);
-        mLibraryFragment = (LibraryFragment) getFragmentManager().findFragmentByTag(ListContent.ID_LIBRARY);
         mViewerFragment = (ViewerMainFragment) getFragmentManager().findFragmentByTag(ListContent.ID_VIEWER);
 
 
@@ -157,10 +138,6 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
 
-
-                if (slideOffset == 1.0){
-                    mDrawerAdapter.notifyDataSetChanged();
-                }
                 super.onDrawerSlide(drawerView, slideOffset);
             }
         };
@@ -174,42 +151,6 @@ public class MainActivity extends ActionBarActivity {
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerList.setSelector(getResources().getDrawable(R.drawable.selectable_rect_background_green));
 
-        View drawerListEmptyView = findViewById(R.id.history_empty_view);
-        mDrawerList.setEmptyView(drawerListEmptyView);
-
-        LayoutInflater inflater = getLayoutInflater();
-        mDrawerList.addHeaderView(inflater.inflate(R.layout.history_drawer_header, null));
-        mDrawerAdapter = new HistoryDrawerAdapter(this, LibraryController.getHistoryList());
-
-        mDrawerList.setAdapter(mDrawerAdapter);
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                mDrawerLayout.closeDrawers();
-                requestOpenFile(LibraryController.getHistoryList().get(i - 1).path);
-
-            }
-        });
-
-        mDrawerList.setOnTouchListener(new SwipeDismissListViewTouchListener(mDrawerList, new SwipeDismissListViewTouchListener.DismissCallbacks() {
-
-            @Override
-            public boolean canDismiss(int position) {
-                return true;
-            }
-
-            public void onDismiss(ListView listView, int[] reverseSortedPositions) {
-                                         for (int position : reverseSortedPositions) {
-
-                                             Toast.makeText(MainActivity.this,getString(R.string.delete) + " " + LibraryController.getHistoryList().get(position - 1).model,Toast.LENGTH_SHORT).show();
-                                             DatabaseController.removeFromHistory(LibraryController.getHistoryList().get(position - 1).path);
-                                             mDrawerAdapter.removeItem(position - 1);
-
-
-                                             }
-                                     }
-                             }));
 
     }
 
@@ -232,10 +173,10 @@ public class MainActivity extends ActionBarActivity {
         mTabHost.setup();
 
         //Models tab
-        TabHost.TabSpec spec = mTabHost.newTabSpec("Library");
-        spec.setIndicator(getTabIndicator(getResources().getString(R.string.fragment_models)));
-        spec.setContent(R.id.maintab1);
-        mTabHost.addTab(spec);
+        TabHost.TabSpec spec;// = mTabHost.newTabSpec("Library");
+//        spec.setIndicator(getTabIndicator(getResources().getString(R.string.fragment_models)));
+//        spec.setContent(R.id.maintab1);
+//        mTabHost.addTab(spec);
 
         //Print panel tab
         spec = mTabHost.newTabSpec("Panel");
@@ -243,20 +184,8 @@ public class MainActivity extends ActionBarActivity {
         spec.setContent(R.id.maintab2);
         mTabHost.addTab(spec);
 
-        //Print view tab
-        spec = mTabHost.newTabSpec("Printer");
-        spec.setIndicator(getTabIndicator(getResources().getString(R.string.fragment_devices)));
-        spec.setContent(R.id.maintab3);
-        mTabHost.addTab(spec);
-
-        if (DatabaseController.count() > 0){
-            mTabHost.setCurrentTab(0);
-            onItemSelected(0);
-        } else {
-            mTabHost.setCurrentTab(2);
-            onItemSelected(2);
-
-        }
+        mTabHost.setCurrentTab(0);
+        onItemSelected(0);
 
 
         mTabHost.getTabWidget().setDividerDrawable(new ColorDrawable(getResources().getColor(R.color.transparent)));
@@ -269,8 +198,6 @@ public class MainActivity extends ActionBarActivity {
                 AnimationHelper.inFromRightAnimation(currentView);
 
                 onItemSelected(mTabHost.getCurrentTab());
-
-                //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
             }
         });
@@ -330,21 +257,7 @@ public class MainActivity extends ActionBarActivity {
 
         //Select fragment
         switch (id) {
-
             case 0: {
-                closePrintView();
-                //Check if we already created the Fragment to avoid having multiple instances
-                if (getFragmentManager().findFragmentByTag(ListContent.ID_LIBRARY) == null) {
-                    mLibraryFragment = new LibraryFragment();
-                    fragmentTransaction.add(R.id.maintab1, mLibraryFragment, ListContent.ID_LIBRARY);
-                }
-                mCurrent = mLibraryFragment;
-            }
-
-            break;
-            case 1: {
-                closePrintView();
-                closeDetailView();
                 //Check if we already created the Fragment to avoid having multiple instances
                 if (getFragmentManager().findFragmentByTag(ListContent.ID_VIEWER) == null) {
                     mViewerFragment = new ViewerMainFragment();
@@ -353,23 +266,7 @@ public class MainActivity extends ActionBarActivity {
                 mCurrent = mViewerFragment;
             }
             break;
-            case 2: {
-                closeDetailView();
-                //Check if we already created the Fragment to avoid having multiple instances
 
-
-                if (getFragmentManager().findFragmentByTag(ListContent.ID_DEVICES) == null) {
-                    mDevicesFragment = new DevicesFragment();
-
-
-                    fragmentTransaction.add(R.id.maintab3, mDevicesFragment, ListContent.ID_DEVICES);
-                }
-
-                mCurrent = mDevicesFragment;
-
-                refreshDevicesCount();
-            }
-            break;
         }
 
         if (mViewerFragment != null) {
@@ -392,44 +289,7 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public static void refreshDevicesCount(){
 
-        mCurrent.setMenuVisibility(false);
-
-        Cursor c = DatabaseController.retrieveDeviceList();
-        if (c.getCount() == 0) {
-
-            mManager.popBackStack();
-            showExtraFragment(2, 0);
-
-        } else {
-
-             if (c.getCount() == 1) {
-
-                c.moveToFirst();
-
-                Log.i("Extra", "Opening " + c.getInt(0));
-
-                showExtraFragment(1, c.getInt(0));
-
-                 mDrawerToggle.setDrawerIndicatorEnabled(true);
-                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-
-
-                } else {
-
-                 mCurrent.setMenuVisibility(true);
-                 mManager.popBackStack();
-                 closePrintView();
-                 closeInitialFragment();
-
-
-             }
-        }
-
-        DatabaseController.closeDb();
-
-    }
 
     /**
      * Method to create a new type of fragment to show special detailed views.
@@ -441,9 +301,7 @@ public class MainActivity extends ActionBarActivity {
 
         //New transaction
         FragmentTransaction mTransaction = mManager.beginTransaction();
-        mTransaction.setCustomAnimations(0, 0 , 0, R.anim.fragment_slide_out_left);
 
-        //Add current fragment to the backstack and hide it (will show again later)
         mTransaction.addToBackStack(mCurrent.getTag());
         mTransaction.hide(mCurrent);
 
@@ -451,35 +309,12 @@ public class MainActivity extends ActionBarActivity {
 
             case 0:
 
-                closePrintView();
                 mManager.popBackStack();
-                SettingsFragment settings = new SettingsFragment();
-                mTransaction.replace(R.id.container_layout, settings, ListContent.ID_SETTINGS).commit();
+                //SettingsFragment settings = new SettingsFragment();
+                //mTransaction.replace(R.id.container_layout, settings, ListContent.ID_SETTINGS).commit();
 
                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
                 mDrawerToggle.setDrawerIndicatorEnabled(false);
-
-                break;
-
-            case 1:
-
-                mCurrent.setMenuVisibility(false);
-                //New detailview with the printer name as extra
-                PrintViewFragment detailp = new PrintViewFragment();
-                Bundle argsp = new Bundle();
-                argsp.putLong("id", id);
-                detailp.setArguments(argsp);
-                mTransaction.replace(R.id.maintab3, detailp, ListContent.ID_PRINTVIEW).commit();
-
-                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-                mDrawerToggle.setDrawerIndicatorEnabled(false);
-
-                break;
-
-            case 2:
-
-                InitialFragment initial = new InitialFragment();
-                mTransaction.replace(R.id.maintab3, initial, ListContent.ID_INITIAL).commit();
 
                 break;
         }
@@ -497,22 +332,10 @@ public class MainActivity extends ActionBarActivity {
     private void closeSettings(){
         //Refresh printview fragment if exists
         Fragment fragment = mManager.findFragmentByTag(ListContent.ID_SETTINGS);
-        if (fragment != null) refreshDevicesCount();
+
     }
 
-    private static void closePrintView(){
-        //Refresh printview fragment if exists
-        Fragment fragment = mManager.findFragmentByTag(ListContent.ID_PRINTVIEW);
-        if (fragment != null) ((PrintViewFragment) fragment).stopCameraPlayback();
 
-        if (mCurrent!=null) mCurrent.setMenuVisibility(true);
-    }
-
-    public static void closeDetailView(){
-        //Refresh printview fragment if exists
-        Fragment fragment = mManager.findFragmentByTag(ListContent.ID_DETAIL);
-        if (fragment != null) ((DetailViewFragment) fragment).removeRightPanel();
-    }
 
     /**
      * Override to allow back navigation on the Storage fragment.
@@ -526,23 +349,8 @@ public class MainActivity extends ActionBarActivity {
 
         if (mCurrent != null) {
             Fragment fragment = mManager.findFragmentByTag(ListContent.ID_SETTINGS);
-            Cursor c = DatabaseController.retrieveDeviceList();
 
-            if ((fragment != null) || (c.getCount() > 1)){
-
-                closePrintView();
-
-                if (mManager.popBackStackImmediate()){
-
-                    mDrawerToggle.setDrawerIndicatorEnabled(true);
-                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-
-                    //Basically refresh printer count if all were deleted in Settings mode
-                    if (mCurrent == mDevicesFragment)
-                        refreshDevicesCount();
-
-                }else super.onBackPressed();
-            } else super.onBackPressed();
+          super.onBackPressed();
 
 
         } else {
@@ -578,12 +386,6 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public static String getCurrentNetwork(Context context){
-
-        WifiManager mWifiManager =  (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        return  mWifiManager.getConnectionInfo().getSSID();
-
-    }
 
     //notify ALL adapters every time a notification is received
     private BroadcastReceiver mAdapterNotification = new BroadcastReceiver() {
@@ -594,33 +396,14 @@ public class MainActivity extends ActionBarActivity {
             String message = intent.getStringExtra("message");
 
             if (message!=null)
-            if (message.equals("Devices")){
-
-                if (mDevicesFragment!=null) mDevicesFragment.notifyAdapter();
-
-                //Refresh printview fragment if exists
-                Fragment fragment = mManager.findFragmentByTag(ListContent.ID_PRINTVIEW);
-                if (fragment != null) ((PrintViewFragment) fragment).refreshData();
-
-            } else if (message.equals("Profile")){
+           if (message.equals("Profile")){
 
                 if (mViewerFragment!=null) {
-                    mViewerFragment.notifyAdapter();
+                   //mViewerFragment.notifyAdapter();
                 }
-
-            } else if (message.equals("Files")){
-
-                if (mLibraryFragment!=null) mLibraryFragment.refreshFiles();
 
             }
 
-            /*else if (message.equals("Notification")){
-
-                long id = intent.getLongExtra("printer", 0);
-
-               notificationManager(id);
-
-            }*/
 
         }
     };

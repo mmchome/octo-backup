@@ -23,7 +23,7 @@
             android:weightSum="4">
 
             <!-- Left panel. Contains options to apply on the model in the right panel -->
-            <LinearLayout
+            <!--LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal|right"
@@ -32,20 +32,20 @@
                 android:gravity="right"
                 android:orientation="vertical">
 
-                <!-- Simple options -->
-                <include
+                <!- Simple options -->
+                <!-- include
                     android:id="@+id/include2"
                     layout="@layout/print_panel_simple_settings_card_view"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content" /-->
 
                 <!-- Advanced options -->
-                <include
+                <!--include
                     android:id="@+id/advanced_options_expandable_panel"
                     layout="@layout/print_panel_advanced_settings_card_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </LinearLayout>
+                    android:layout_height="match_parent" /-->
+            <!--LinearLayout-->
 
             <!-- Right panel. Contains the 3D model -->
             <RelativeLayout
@@ -248,17 +248,17 @@
                         <LinearLayout
                             android:id="@+id/print_panel_edit_linearlayout"
                             android:layout_width="match_parent"
-                            android:layout_height="50dp"
+                            android:layout_height="10dp"
                             android:layout_gravity="bottom"
                             android:gravity="center"
                             android:orientation="horizontal"
-                            android:visibility="visible">
+                            android:visibility="gone">
 
                             <ImageView
                                 android:id="@+id/print_panel_bar_action_image"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:padding="@dimen/content_padding_small"/>
+                                android:padding="@dimen/content_padding_small" />
 
                             <LinearLayout
                                 android:id="@+id/model_button_rotate_bar_linearlayout"
@@ -273,7 +273,7 @@
                                     android:layout_width="fill_parent"
                                     android:layout_height="wrap_content"
                                     android:background="#1E88E5"
-                                    materialdesign:showNumberIndicator="true"/>
+                                    materialdesign:showNumberIndicator="true" />
 
 
                             </LinearLayout>
@@ -283,77 +283,75 @@
                                 android:id="@+id/model_button_scale_bar_linearlayout"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:descendantFocusability="afterDescendants"
                                 android:gravity="center"
                                 android:orientation="horizontal"
-                                android:descendantFocusability="afterDescendants"
                                 android:visibility="gone">
 
                                 <TextView
+                                    style="@style/TextHeader"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    style="@style/TextHeader"
                                     android:layout_margin="@dimen/content_margin_small"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
                                     android:layout_weight="1"
                                     android:gravity="right"
-                                    android:text="@string/print_panel_x_axis"/>
+                                    android:text="@string/print_panel_x_axis"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
 
                                 <EditText
                                     android:id="@+id/scale_bar_x_edittext"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textColor="@color/white"
-                                    android:digits="0123456789."
-                                    android:inputType="number|numberDecimal"
                                     android:layout_weight="1"
+                                    android:digits="0123456789."
                                     android:imeOptions="actionDone"
-                                    />
+                                    android:inputType="number|numberDecimal"
+                                    android:textColor="@color/white" />
 
                                 <TextView
+                                    style="@style/TextHeader"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    style="@style/TextHeader"
                                     android:layout_margin="@dimen/content_margin_small"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
                                     android:layout_weight="1"
                                     android:gravity="right"
-                                    android:text="@string/print_panel_y_axis"/>
+                                    android:text="@string/print_panel_y_axis"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
 
                                 <EditText
                                     android:id="@+id/scale_bar_y_edittext"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textColor="@color/white"
-                                    android:digits="0123456789."
-                                    android:inputType="number|numberDecimal"
                                     android:layout_weight="1"
+                                    android:digits="0123456789."
                                     android:imeOptions="actionDone"
+                                    android:inputType="number|numberDecimal"
+                                    android:textColor="@color/white"
 
                                     />
 
                                 <TextView
+                                    style="@style/TextHeader"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    style="@style/TextHeader"
                                     android:layout_margin="@dimen/content_margin_small"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
                                     android:layout_weight="1"
                                     android:gravity="right"
-                                    android:text="@string/print_panel_z_axis"/>
+                                    android:text="@string/print_panel_z_axis"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
 
                                 <EditText
                                     android:id="@+id/scale_bar_z_edittext"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textColor="@color/white"
-                                    android:digits="0123456789."
-                                    android:inputType="number|numberDecimal"
                                     android:layout_weight="1"
+                                    android:digits="0123456789."
                                     android:imeOptions="actionDone"
-                                    />
+                                    android:inputType="number|numberDecimal"
+                                    android:textColor="@color/white" />
 
                                 <LinearLayout
                                     android:layout_width="match_parent"
@@ -365,12 +363,10 @@
                                         android:id="@+id/scale_uniform_button"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:src="@drawable/ic_editor_insert_link"
                                         android:background="@drawable/button_toggle_selector"
-                                        />
+                                        android:src="@drawable/ic_editor_insert_link" />
 
-                                    </LinearLayout>
-
+                                </LinearLayout>
 
 
                             </LinearLayout>
@@ -390,7 +386,7 @@
                     android:layout_alignParentRight="true">
 
                     <!-- Bottom bar with the progress and axis info -->
-                    <LinearLayout
+                    <!--LinearLayout
                         android:id="@+id/model_status_bottom_bar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -404,10 +400,10 @@
                             android:visibility="invisible"/>
 
 
-                    </LinearLayout>
+                    </LinearLayout-->
 
                     <!-- Print button -->
-                    <LinearLayout
+                    <!--LinearLayout
                         android:id="@+id/print_button_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -447,7 +443,7 @@
                             android:paddingLeft="5dp"
                             android:textAllCaps="true"/>
 
-                        <LinearLayout
+                        <!-LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="end"
@@ -467,10 +463,10 @@
                                 widget:paper_text="@string/viewer_button_print" />
 
 
-                            </LinearLayout>
+                            </LinearLayout-->
 
 
-                    </LinearLayout>
+                    <!--/LinearLayout-->
                 </LinearLayout>
 
 

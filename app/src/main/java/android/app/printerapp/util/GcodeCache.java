@@ -1,4 +1,4 @@
-package android.app.printerapp.devices.printview;
+package android.app.printerapp.util;
 
 import android.app.printerapp.Log;
 import android.app.printerapp.viewer.DataStorage;

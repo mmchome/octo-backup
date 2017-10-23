@@ -1,35 +1,24 @@
 package android.app.printerapp.viewer;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.app.Fragment;
 import android.app.printerapp.Log;
 import android.app.printerapp.MainActivity;
 import android.app.printerapp.R;
-import android.app.printerapp.devices.database.DatabaseController;
-import android.app.printerapp.library.LibraryController;
-import android.app.printerapp.model.ModelProfile;
-import android.app.printerapp.octoprint.OctoprintConnection;
-import android.app.printerapp.octoprint.StateUtils;
 import android.app.printerapp.util.ui.CustomEditableSlider;
 import android.app.printerapp.util.ui.CustomPopupWindow;
 import android.app.printerapp.util.ui.ListIconPopupWindowAdapter;
-import android.app.printerapp.viewer.sidepanel.SidePanelHandler;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
@@ -43,7 +32,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -110,19 +98,13 @@ public class ViewerMainFragment extends Fragment {
     private static ViewerSurfaceView mSurface;
     private static FrameLayout mLayout;
 
-    //Advanced settings expandable panel
-    private int mSettingsPanelMinHeight;
 
     //Buttons
     private static ImageButton mVisibilityModeButton;
 
     private static SeekBar mSeekBar;
-    private boolean isKeyboardShown = false;
 
     private static List<DataStorage> mDataList = new ArrayList<DataStorage>();
-
-    //Undo button bar
-    private static LinearLayout mUndoButtonBar;
 
     //Edition menu variables
     private static ProgressBar mProgress;
@@ -130,8 +112,8 @@ public class ViewerMainFragment extends Fragment {
     private static Context mContext;
     private static View mRootView;
 
-    private static LinearLayout mStatusBottomBar;
-    private static FrameLayout mBottomBar;
+    //private static LinearLayout mStatusBottomBar;
+   // private static FrameLayout mBottomBar;
     private static LinearLayout mRotationLayout;
     private static LinearLayout mScaleLayout;
     private static CustomEditableSlider mRotationSlider;
@@ -142,6 +124,8 @@ public class ViewerMainFragment extends Fragment {
     private static EditText mScaleEditZ;
     private static ImageButton mUniformScale;
 
+    private static LinearLayout mUndoButtonBar;
+
     private static ScaleChangeListener mTextWatcherX;
     private static ScaleChangeListener mTextWatcherY;
     private static ScaleChangeListener mTextWatcherZ;
@@ -150,7 +134,6 @@ public class ViewerMainFragment extends Fragment {
      * ****************************************************************************
      */
     private static SlicingHandler mSlicingHandler;
-    private static SidePanelHandler mSidePanelHandler;
 
     private static int mCurrentType = WitboxFaces.TYPE_WITBOX;
     ;
@@ -197,61 +180,20 @@ public class ViewerMainFragment extends Fragment {
 
 
             //Register receiver
-            mContext.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+           // mContext.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
             initUIElements();
 
-//            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
             getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
             //Init slicing elements
-            mSidePanelHandler = new SidePanelHandler(mSlicingHandler, getActivity(), mRootView);
-            mCurrentType = WitboxFaces.TYPE_WITBOX;
-            mCurrentPlate = new int[]{WitboxFaces.WITBOX_LONG, WitboxFaces.WITBOX_WITDH, WitboxFaces.WITBOX_HEIGHT};
+           mCurrentType = WitboxFaces.TYPE_WITBOX;
+           mCurrentPlate = new int[]{WitboxFaces.WITBOX_LONG, WitboxFaces.WITBOX_WITDH, WitboxFaces.WITBOX_HEIGHT};
 
-            mSurface = new ViewerSurfaceView(mContext, mDataList, NORMAL, DONT_SNAPSHOT, mSlicingHandler);
+           mSurface = new ViewerSurfaceView(mContext, mDataList, NORMAL, DONT_SNAPSHOT, mSlicingHandler);
             draw();
 
-            //Hide the action bar when editing the scale of the model
-            mRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-
-                    Rect r = new Rect();
-                    mRootView.getWindowVisibleDisplayFrame(r);
-
-                    if (mSurface.getEditionMode() == ViewerSurfaceView.SCALED_EDITION_MODE){
-
-                        int[] location = new int[2];
-                        int heightDiff = mRootView.getRootView().getHeight() - (r.bottom - r.top);
-
-                        if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
-
-                            if (!isKeyboardShown) {
-                                isKeyboardShown = true;
-                                mActionModePopupWindow.getContentView().getLocationInWindow(location);
-
-                                if (Build.VERSION.SDK_INT >= 19)
-                                    mActionModePopupWindow.update(location[0], location[1] - MENU_HIDE_OFFSET_SMALL);
-                                else  mActionModePopupWindow.update(location[0], location[1] + MENU_HIDE_OFFSET_BIG);
-                            }
-                        } else {
-                            if (isKeyboardShown) {
-                                isKeyboardShown = false;
-                                mActionModePopupWindow.getContentView().getLocationInWindow(location);
-
-                                if (Build.VERSION.SDK_INT >= 19)
-                                    mActionModePopupWindow.update(location[0], location[1] + MENU_HIDE_OFFSET_SMALL);
-                                else  mActionModePopupWindow.update(location[0], location[1] - MENU_HIDE_OFFSET_BIG);
-
-                            }
-
-                        }
-                    }
-
-                }
-            });
-        }
+       }
 
         return mRootView;
 
@@ -283,24 +225,6 @@ public class ViewerMainFragment extends Fragment {
      */
 
     private void initUIElements() {
-
-        //Set behavior of the expandable panel
-        final FrameLayout expandablePanel = (FrameLayout) mRootView.findViewById(R.id.advanced_options_expandable_panel);
-        expandablePanel.post(new Runnable() { //Get the initial height of the panel after onCreate is executed
-            @Override
-            public void run() {
-                mSettingsPanelMinHeight = expandablePanel.getMeasuredHeight();
-            }
-        });
-        /*final CheckBox expandPanelButton = (CheckBox) mRootView.findViewById(R.id.expand_button_checkbox);
-        expandPanelButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //Expand/collapse the expandable panel
-                if (isChecked) ExpandCollapseAnimation.collapse(expandablePanel, mSettingsPanelMinHeight);
-                else ExpandCollapseAnimation.expand(expandablePanel);
-            }
-        });*/
 
         //Set elements to handle the model
         mSeekBar = (SeekBar) mRootView.findViewById(R.id.barLayer);
@@ -426,7 +350,7 @@ public class ViewerMainFragment extends Fragment {
             }
         });
 
-        mStatusBottomBar = (LinearLayout) mRootView.findViewById(R.id.model_status_bottom_bar);
+        //mStatusBottomBar = (LinearLayout) mRootView.findViewById(R.id.model_status_bottom_bar);
         mRotationLayout = (LinearLayout) mRootView.findViewById(R.id.model_button_rotate_bar_linearlayout);
         mScaleLayout  = (LinearLayout) mRootView.findViewById(R.id.model_button_scale_bar_linearlayout);
 
@@ -457,9 +381,9 @@ public class ViewerMainFragment extends Fragment {
         mScaleEditY.addTextChangedListener(mTextWatcherY);
         mScaleEditZ.addTextChangedListener(mTextWatcherZ);
 
-        mStatusBottomBar.setVisibility(View.VISIBLE);
-        mBottomBar = (FrameLayout) mRootView.findViewById(R.id.bottom_bar);
-        mBottomBar.setVisibility(View.INVISIBLE);
+        //mStatusBottomBar.setVisibility(View.VISIBLE);
+        //mBottomBar = (FrameLayout) mRootView.findViewById(R.id.bottom_bar);
+        //mBottomBar.setVisibility(View.INVISIBLE);
         mCurrentAxis = -1;
 
     }
@@ -589,19 +513,14 @@ public class ViewerMainFragment extends Fragment {
      */
     public static void optionClean() {
 
-        //Delete slicing reference
-        //DatabaseController.handlePreference("Slicing", "Last", null, false);
-
         mDataList.clear();
         mFile = null;
         
         if (mSlicingHandler!=null){
-
             mSlicingHandler.setOriginalProject(null);
             mSlicingHandler.setLastReference(null);
             mSeekBar.setVisibility(View.INVISIBLE);
             mSurface.requestRender();
-            showProgressBar(0,0);
         }
 
 
@@ -614,7 +533,7 @@ public class ViewerMainFragment extends Fragment {
      */
     public static void openFileDialog(final String filePath) {
 
-        if (LibraryController.hasExtension(0, filePath)) {
+        if (hasExtension(0, filePath)) {
 
             if (!StlFile.checkFileSize(new File(filePath), mContext)) {
                 new MaterialDialog.Builder(mContext)
@@ -637,7 +556,7 @@ public class ViewerMainFragment extends Fragment {
             } else {
                 openFile(filePath);
             }
-        } else if (LibraryController.hasExtension(1, filePath)) {
+        } else if (hasExtension(1, filePath)) {
 
             new MaterialDialog.Builder(mContext)
                     .title(R.string.warning)
@@ -671,17 +590,16 @@ public class ViewerMainFragment extends Fragment {
     public static void openFile(String filePath) {
         DataStorage data = null;
         //Open the file
-        if (LibraryController.hasExtension(0, filePath)) {
+        if (hasExtension(0, filePath)) {
 
             data = new DataStorage();
 
             mVisibilityModeButton.setVisibility(View.VISIBLE);
             mFile = new File(filePath);
             StlFile.openStlFile(mContext, mFile, data, DONT_SNAPSHOT);
-            mSidePanelHandler.enableProfileSelection(true);
             mCurrentViewMode = NORMAL;
 
-        } else if (LibraryController.hasExtension(1, filePath)) {
+        } else if (hasExtension(1, filePath)) {
 
             data = new DataStorage();
             if (!filePath.contains("/temp")) {
@@ -690,16 +608,12 @@ public class ViewerMainFragment extends Fragment {
             }
             mFile = new File(filePath);
             GcodeFile.openGcodeFile(mContext, mFile, data, DONT_SNAPSHOT);
-            mSidePanelHandler.enableProfileSelection(false);
             mCurrentViewMode = LAYER;
 
         }
 
         mDataList.add(data);
 
-
-
-        //Adding original project //TODO elsewhere?
         if (mSlicingHandler != null)
             if (mSlicingHandler.getOriginalProject() == null){
                 mSlicingHandler.setOriginalProject(mFile.getParentFile().getParent());
@@ -718,20 +632,10 @@ public class ViewerMainFragment extends Fragment {
 
         //Handle the special mode: LAYER
         if (state == LAYER) {
-            File tempFile = new File(LibraryController.getParentFolder() + "/temp/temp.gco");
+            File tempFile = new File(getParentFolder() + "/temp/temp.gco");
             if (tempFile.exists()) {
-
-                //It's the last file
-                if (DatabaseController.getPreference("Slicing", "Last") == null) {
-
-                    //Open desired file
-                    openFile(tempFile.getAbsolutePath());
-                    mCurrentViewMode = state;
-
-                } else {
-                    Toast.makeText(getActivity(), R.string.viewer_slice_wait, Toast.LENGTH_SHORT).show();
-                }
-
+                openFile(tempFile.getAbsolutePath());
+                mCurrentViewMode = state;
             } else {
                 Toast.makeText(getActivity(), R.string.viewer_slice_wait, Toast.LENGTH_SHORT).show();
 
@@ -808,16 +712,16 @@ public class ViewerMainFragment extends Fragment {
         String filePath = "";
         if (mFile != null) filePath = mFile.getAbsolutePath();
 
-        if (LibraryController.hasExtension(0, filePath)) {
+        if (hasExtension(0, filePath)) {
             if (mDataList.size() > 1) {
-                if (LibraryController.hasExtension(1, mDataList.get(mDataList.size() - 2).getPathFile())) {
+                if (hasExtension(1, mDataList.get(mDataList.size() - 2).getPathFile())) {
                     mDataList.remove(mDataList.size() - 2);
                 }
             }
             Geometry.relocateIfOverlaps(mDataList);
             mSeekBar.setVisibility(View.INVISIBLE);
 
-        } else if (LibraryController.hasExtension(1, filePath)) {
+        } else if (hasExtension(1, filePath)) {
             if (mDataList.size() > 1)
                 while (mDataList.size() > 1) {
                     mDataList.remove(0);
@@ -831,8 +735,8 @@ public class ViewerMainFragment extends Fragment {
         mLayout.addView(mSeekBar, 1);
         mLayout.addView(mSizeText, 2);
 
-//      mLayout.addView(mUndoButtonBar, 3);
-//      mLayout.addView(mEditionLayout, 2);
+      mLayout.addView(mUndoButtonBar, 3);
+      //mLayout.addView(mEditionLayout, 2);
     }
 
     /**
@@ -887,7 +791,7 @@ public class ViewerMainFragment extends Fragment {
                             case R.id.save_model_stl_checkbox:
 
                                 if (mFile != null) {
-                                    if (LibraryController.hasExtension(0, mFile.getName())) {
+                                    if (hasExtension(0, mFile.getName())) {
                                         if (StlFile.checkIfNameExists(proyectNameText.getText().toString()))
                                             proyectNameText.setError(mContext.getString(R.string.proyect_name_not_available));
                                         else {
@@ -912,7 +816,7 @@ public class ViewerMainFragment extends Fragment {
 
                             case R.id.save_model_gcode_checkbox:
 
-                                final File fileFrom = new File(LibraryController.getParentFolder() + "/temp/temp.gco");
+                                final File fileFrom = new File(getParentFolder() + "/temp/temp.gco");
 
 
                                 //if there is a temporary sliced gcode
@@ -1082,8 +986,8 @@ public class ViewerMainFragment extends Fragment {
             mSurface.exitEditionMode();
             mRotationLayout.setVisibility(View.GONE);
             mScaleLayout.setVisibility(View.GONE);
-            mStatusBottomBar.setVisibility(View.VISIBLE);
-            mBottomBar.setVisibility(View.INVISIBLE);
+            //mStatusBottomBar.setVisibility(View.VISIBLE);
+            //mBottomBar.setVisibility(View.INVISIBLE);
             mActionModePopupWindow = null;
             mSurface.setRendererAxis(-1);
         }
@@ -1123,11 +1027,9 @@ public class ViewerMainFragment extends Fragment {
      */
     public static void onActionItemSelected(final ImageButton item) {
 
-        mStatusBottomBar.setVisibility(View.VISIBLE);
         mSurface.setRendererAxis(-1);
         mRotationLayout.setVisibility(View.GONE);
         mScaleLayout.setVisibility(View.GONE);
-        mBottomBar.setVisibility(View.INVISIBLE);
         mSizeText.setVisibility(View.VISIBLE);
 
         selectActionButton(item.getId());
@@ -1147,7 +1049,7 @@ public class ViewerMainFragment extends Fragment {
                                 @Override
                                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                     changeCurrentAxis(Integer.parseInt(actionButtonsValues[position]));
-                                    mBottomBar.setVisibility(View.VISIBLE);
+                                    //mBottomBar.setVisibility(View.VISIBLE);
                                     mRotationLayout.setVisibility(View.VISIBLE);
                                     mSurface.setEditionMode(ViewerSurfaceView.ROTATION_EDITION_MODE);
                                     hideCurrentActionPopUpWindow();
@@ -1161,7 +1063,7 @@ public class ViewerMainFragment extends Fragment {
                 break;
             case R.id.scale_item_button:
                 hideCurrentActionPopUpWindow();
-                mBottomBar.setVisibility(View.VISIBLE);
+                //mBottomBar.setVisibility(View.VISIBLE);
                 mScaleLayout.setVisibility(View.VISIBLE);
                 mSurface.setEditionMode(ViewerSurfaceView.SCALED_EDITION_MODE);
                 mActionImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_action_scale));
@@ -1376,132 +1278,7 @@ public class ViewerMainFragment extends Fragment {
         draw();
     }
 
-/**
- * **************************** PROGRESS BAR FOR SLICING ******************************************
- */
 
-    /**
-     * Static method to show the progress bar by sending an integer when receiving data from the socket
-     *
-     * @param i either -1 to hide the progress bar, 0 to show an indefinite bar, or a normal integer
-     */
-    public static void showProgressBar(int status, int i) {
-
-
-        if (mRootView!=null){
-
-
-            ProgressBar pb = (ProgressBar) mRootView.findViewById(R.id.progress_slice);
-            TextView tv = (TextView) mRootView.findViewById(R.id.viewer_text_progress_slice);
-            TextView tve = (TextView) mRootView.findViewById(R.id.viewer_text_estimated_time);
-            TextView tve_title = (TextView) mRootView.findViewById(R.id.viewer_estimated_time_textview);
-
-            if ( mSlicingHandler.getLastReference()!= null) {
-
-                tve_title.setVisibility(View.VISIBLE);
-                pb.setVisibility(View.VISIBLE);
-
-                switch (status) {
-
-                    case StateUtils.SLICER_HIDE:
-
-                        if (i < 0) {
-
-                            tv.setText(R.string.error);
-
-                        } else {
-                            tv.setText(R.string.viewer_text_downloaded);
-                        }
-
-                        pb.setVisibility(View.INVISIBLE);
-
-                        break;
-
-                    case StateUtils.SLICER_UPLOAD:
-
-                        String uploadText = mContext.getString(R.string.viewer_text_uploading);
-
-
-                        if (i == 0) pb.setIndeterminate(true);
-                        else {
-
-                            pb.setProgress(i);
-                            pb.setIndeterminate(false);
-
-                            uploadText += " (" + i + "%)";
-
-                        }
-
-                        tv.setText(uploadText);
-                        tve.setText(null);
-
-                        break;
-
-                    case StateUtils.SLICER_SLICE:
-
-                        String slicingText = mContext.getString(R.string.viewer_text_slicing);
-
-
-                        if (i == 0) {
-                            pb.setIndeterminate(true);
-
-                        } else if (i == 100) {
-
-                            pb.setIndeterminate(false);
-                            pb.setProgress(100);
-
-                            slicingText += "  " + mContext.getString(R.string.viewer_text_done);
-
-                        } else {
-
-                            pb.setProgress(i);
-                            pb.setIndeterminate(false);
-
-                            slicingText += "  (" + i + "%)";
-
-                        }
-
-                        tv.setText(slicingText);
-                        tve.setText(null);
-
-                        mRootView.invalidate();
-
-                        break;
-
-                    case StateUtils.SLICER_DOWNLOAD:
-
-
-                        if (i > 0) {
-                            tve.setText(OctoprintConnection.ConvertSecondToHHMMString(String.valueOf(i)));
-                        }
-                        tv.setText(R.string.viewer_text_downloading);
-                        pb.setIndeterminate(true);
-
-                        break;
-
-                    default:
-
-                        break;
-
-
-                }
-
-            }else {
-
-                pb.setVisibility(View.INVISIBLE);
-                tve_title.setVisibility(View.INVISIBLE);
-                tv.setText(null);
-                tve.setText(null);
-                mRootView.invalidate();
-
-
-
-            }
-        }
-
-
-
-    }
 
     /**
      * Display model width, depth and height when touched
@@ -1558,52 +1335,15 @@ public class ViewerMainFragment extends Fragment {
 
     }
 
-    /**
-     * Receives the "download complete" event asynchronously
-     */
-    public BroadcastReceiver onComplete = new BroadcastReceiver() {
-        public void onReceive(Context ctxt, Intent intent) {
-
-            if (DatabaseController.getPreference(DatabaseController.TAG_SLICING, "Last") != null)
-                if ((DatabaseController.getPreference(DatabaseController.TAG_SLICING, "Last")).equals("temp.gco")) {
-
-                    DatabaseController.handlePreference(DatabaseController.TAG_SLICING, "Last", null, false);
 
 
-                    showProgressBar(StateUtils.SLICER_HIDE, 0);
-                } else {
-
-                }
-
-
-        }
-    };
-
-    /**
-     * Notify the side panel adapters, check for null if they're not available yet (rare case)
-     */
-    public void notifyAdapter() {
-
-        try {
-            if (mSidePanelHandler.profileAdapter != null)
-                mSidePanelHandler.profileAdapter.notifyDataSetChanged();
-
-            mSidePanelHandler.reloadProfileAdapter();
-
-        } catch (NullPointerException e) {
-
-            e.printStackTrace();
-        }
-
-
-    }
 
     //Refresh printers when the fragmetn is shown
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
 
-        mSidePanelHandler.refreshPrinters();
+        //mSidePanelHandler.refreshPrinters();
     }
 
 
@@ -1613,12 +1353,7 @@ public class ViewerMainFragment extends Fragment {
         if (sharedPref.getBoolean(mContext.getResources().getString(R.string.shared_preferences_autoslice), true)) {
 
             SliceTask task = new SliceTask();
-            mSidePanelHandler.refreshPrinters();
             task.execute();
-        } else {
-
-            mSidePanelHandler.refreshPrinters();
-            mSidePanelHandler.switchSlicingButton(true);
         }
 
 
@@ -1626,9 +1361,8 @@ public class ViewerMainFragment extends Fragment {
 
     public static void slicingCallbackForced(){
 
-//        SliceTask task = new SliceTask();
-        mSidePanelHandler.refreshPrinters();
-//        task.execute();
+        SliceTask task = new SliceTask();
+        task.execute();
 
         Handler slicingHandler = new Handler();
         slicingHandler.post(mSliceRunnable);
@@ -1653,7 +1387,7 @@ public class ViewerMainFragment extends Fragment {
 
             if ((mSlicingHandler != null) && (mFile != null)) {
 
-                if (LibraryController.hasExtension(0, mFile.getName())) {
+                if (hasExtension(0, mFile.getName())) {
                     // StlFile.saveModel(newList, null, mSlicingHandler);
                     mSlicingHandler.sendTimer(newList);
                 }
@@ -1685,7 +1419,7 @@ public class ViewerMainFragment extends Fragment {
 
             if ((mSlicingHandler != null) && (mFile != null)) {
 
-                if (LibraryController.hasExtension(0, mFile.getName())) {
+                if (hasExtension(0, mFile.getName())) {
                     // StlFile.saveModel(newList, null, mSlicingHandler);
                     mSlicingHandler.sendTimer(newList);
                 }
@@ -1716,23 +1450,7 @@ public class ViewerMainFragment extends Fragment {
 
     public static int getCurrentType() {
         return mCurrentType;
-    }
-
-    public static void changePlate(String resource) throws NullPointerException {
-
-        JSONObject profile = ModelProfile.retrieveProfile(mContext, resource, ModelProfile.TYPE_P);
-
-        try {
-            JSONObject volume = profile.getJSONObject("volume");
-            mCurrentPlate = new int[]{volume.getInt("width") / 2, volume.getInt("depth") / 2, volume.getInt("height")};
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        mSurface.changePlate(mCurrentPlate);
-        mSurface.requestRender();
-    }
+    };
 
     public static void setSlicingPosition(float x, float y) {
 
@@ -1762,47 +1480,7 @@ public class ViewerMainFragment extends Fragment {
 
     }
 
-    /********************************* RESTORE PANEL *************************/
 
-    /**
-     * check if there is a reference to restore the last panel and open it
-     */
-    private void restoreLastPanel() {
-
-        if (mSlicingHandler.getLastReference() == null) //Only if there is no last reference
-            if (DatabaseController.getPreference(DatabaseController.TAG_RESTORE, "Last") != null) {
-
-                final String file = DatabaseController.getPreference(DatabaseController.TAG_RESTORE, "Last");
-
-                AlertDialog.Builder adb = new AlertDialog.Builder(mContext);
-                adb.setTitle(R.string.viewer_restore_session);
-
-                adb.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                        openFileDialog(file);
-                        mSlicingHandler.setLastReference(file);
-
-                    }
-                });
-
-                adb.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        DatabaseController.handlePreference(DatabaseController.TAG_RESTORE, "Last", null, false);
-                    }
-                });
-
-                adb.show();
-
-            } else {
-
-                Toast.makeText(mContext, "No last session", Toast.LENGTH_SHORT).show();
-
-            }
-
-    }
 
     public static void displayErrorInAxis(int axis){
 
@@ -1819,7 +1497,28 @@ public class ViewerMainFragment extends Fragment {
         }
 
 
+    }
 
+    public static boolean hasExtension(int type, String name){
+
+        switch (type){
+
+            case 0: if (name.toLowerCase().endsWith(".stl"))  return true;
+                break;
+            case 1: if ((name.toLowerCase().endsWith(".gcode")) || (name.toLowerCase().endsWith(".gco")) || (name.toLowerCase().endsWith(".g"))) return true;
+                break;
+        }
+
+        return false;
+    }
+
+    public static File getParentFolder(){
+        String parentFolder = Environment.getExternalStorageDirectory().toString();
+        File mainFolder = new File(parentFolder + "/PrintManager");
+        mainFolder.mkdirs();
+        File temp_file = new File(mainFolder.toString());
+
+        return temp_file;
     }
 
 

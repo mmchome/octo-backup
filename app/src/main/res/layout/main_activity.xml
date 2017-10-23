@@ -43,12 +43,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                        <LinearLayout
+                        <!--LinearLayout
                             android:id="@+id/maintab1"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@color/pager_background"
-                            android:orientation="vertical"></LinearLayout>
+                            android:orientation="vertical"></LinearLayout-->
 
                         <LinearLayout
                             android:id="@+id/maintab2"
@@ -57,12 +57,12 @@
                             android:background="@color/pager_background"
                             android:orientation="vertical"></LinearLayout>
 
-                        <LinearLayout
+                        <!--LinearLayout
                             android:id="@+id/maintab3"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@color/pager_background"
-                            android:orientation="vertical"></LinearLayout>
+                            android:orientation="vertical"></LinearLayout-->
 
                     </FrameLayout>
                 </LinearLayout>
@@ -80,25 +80,14 @@
         <FrameLayout
             android:layout_width="340dp"
             android:layout_height="match_parent"
-            android:background="#FFFFFF"
-            android:layout_gravity="start">
+            android:layout_gravity="start"
+            android:background="#FFFFFF">
 
             <ListView
                 android:id="@+id/left_drawer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:footerDividersEnabled="false" />
-
-            <TextView
-                android:id="@+id/history_empty_view"
-                style="@style/TextInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:padding="@dimen/content_margin_large"
-                android:text="@string/history_empty_text"
-                android:textSize="@dimen/text_size_xlarge" />
 
         </FrameLayout>
 
